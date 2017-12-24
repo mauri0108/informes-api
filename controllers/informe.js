@@ -38,7 +38,6 @@ function createInforme(req, res) {
   nInforme.items = params.items;
   nInforme.creado = moment().format('DD-MM-YYYY HH:mm:ss');
 
-
   nInforme.save((err, informeStored) => {
     if (err) {
       res.status(500).send({ message: 'Error en la peticion', error : err });
