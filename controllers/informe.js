@@ -35,8 +35,8 @@ function createInforme(req, res) {
   var nInforme = new Informe();
 
   nInforme.nombre = params.nombre;
-  nInforme.organos = params.organos;
-  nInforme.creado = moment().format('dd-mm-yyyy');
+  nInforme.items = params.items;
+  nInforme.creado = moment().format('DD-MM-YYYY HH:mm:ss');
 
 
   nInforme.save((err, informeStored) => {
