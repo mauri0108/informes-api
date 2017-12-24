@@ -1,6 +1,7 @@
 'use strict'
 
 var Informe = require("../models/informe");
+const moment = require('moment')
 
 function getInformes(req, res) {
   Informe.find({}).exec((err, informes) =>{
