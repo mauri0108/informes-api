@@ -8,7 +8,7 @@ function getInformes(req, res) {
     if (err) {
       res.status(500).send({message: 'Error en la peticion al servidor', error : err});
     } else {
-      res.status(200).send( informes );
+      res.status(200).send( { informes : informes} );
     }
   });
 }
@@ -18,12 +18,12 @@ function getInforme(req, res) {
 
   Informe.findById(idInforme).exec((err, informe) =>{
     if (err) {
-      res.status(500).send({message: 'Error en la peticion al servidor', error : err});
+      res.status(500).send({ message: 'Error en la peticion al servidor', error : err });
     } else {
       if (!informe) {
         res.status(200).send({ message: 'No existe ningun informe con este id'});
       } else {
-        res.status(200).send( informe );
+        res.status(200).send( { informe : informe } );
       }
     }
   });
@@ -45,7 +45,7 @@ function createInforme(req, res) {
       if (!informeStored) {
         res.status(200).send({ message : 'No se ha guardado el informe'});
       } else {
-        res.status(200).send( informeStored );
+        res.status(200).send( { informe : informeStored, message : 'Se guardo correctamente el informe'} );
       }
     }
   });
@@ -62,7 +62,7 @@ function editInforme(req, res) {
       if (!informeEdited) {
         res.status(404).send({message:'No se ha podido actualizar el informe'});
       }else {
-        res.status(200).send( informeEdited );
+        res.status(200).send( { informe : informeEdited, message : 'Se actualizo correctamente el informe'} );
       }
     }
   });
