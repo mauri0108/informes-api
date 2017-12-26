@@ -10,6 +10,7 @@ api.get('/informes',informeController.getInformes);
 //api.get('/informes',md_auth.ensureAuth,informeController.getInformes);
 api.get('/informe/:id', informeController.getInforme);
 api.post('/informe/crear', informeController.createInforme);
+api.post('/informe/editar', informeController.editInforme);
 
 
 module.exports = api;
