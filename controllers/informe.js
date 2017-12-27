@@ -55,7 +55,7 @@ function editInforme(req, res) {
   var idInforme = req.body._id;
   var datosNuevos = req.body;
 
-  Hotel.findByIdAndUpdate(idInforme, datosNuevos,{new : true},(err, informeEdited)=>{
+  Informe.findByIdAndUpdate(idInforme, datosNuevos,{new : true},(err, informeEdited)=>{
     if (err) {
       res.status(500).send({message:'Error al actualizar el informe', err : err});
     }else {
