@@ -6,10 +6,11 @@ var usuarioController = require('../controllers/usuario');
 var api = express.Router();
 var md_auth = require('../middlewares/authenticated');
 
-//api.get('/informes', informeController.getInformes);
-//api.get('/informe/:id', informeController.getInforme);
-api.post('/registrarse',usuarioController.createUser);
+api.post('/usuario/crear',usuarioController.createUser);
 api.post('/login',usuarioController.login);
+api.get('/usuarios',usuarioController.getUsers);
+api.get('/usuario/:id',usuarioController.getUser);
+api.post('/usuario/editar',usuarioController.editUser);
 
 
 module.exports = api;
