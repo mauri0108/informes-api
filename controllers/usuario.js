@@ -34,7 +34,7 @@ function createUser(req, res) {
             if (nUsuario.nombre != null && nUsuario.apellido != null) {
               nUsuario.save((err, usuarioStored)=>{
                 if (err) {
-                  res.status(500).send({message: 'Error al guardar el usuario'});
+                  res.status(500).send({message: 'Error al guardar el usuario', error: err});
                 } else {
                   if (!usuarioStored) {
                     res.status(404).send({message: 'No se ha registrado el usuario'});
@@ -57,6 +57,49 @@ function createUser(req, res) {
   }
 }
 
+function getUsers(req, res) {
+  Usuario.find({}).exec((err, usuarios) =>{
+    if (err) {
+      res.status(500).send({message: 'Error en la peticion al servidor', error : err});
+    } else {
+      res.status(200).send( { usuarios : usuarios} );
+    }
+  });
+}
+
+function getUser(req, res) {
+  var idUsuario = req.params.id;
+
+  Usuario.findById(idUsuario).exec((err, usuario) =>{
+    if (err) {
+      res.status(500).send({ message: 'Error en la peticion al servidor', error : err });
+    } else {
+      if (!usuario) {
+        res.status(200).send({ message: 'No existe ningun usuario con este id'});
+      } else {
+        res.status(200).send( { usuario : usuario } );
+      }
+    }
+  });
+}
+
+function editUser(req, res) {
+  var idUsuario = req.body._id;
+  var datosNuevos = req.body;
+
+  Usuario.findByIdAndUpdate(idUsuario, datosNuevos,{new : true},(err, userEdited)=>{
+    if (err) {
+      res.status(500).send({message:'Error al actualizar el usuario', err : err});
+    }else {
+      if (!userEdited) {
+        res.status(404).send({message:'No se ha podido actualizar el usuario'});
+      }else {
+        res.status(200).send( { usuario : userEdited, message : 'Se actualizo correctamente el usuario'} );
+      }
+    }
+  });
+}
+
 
 function login(req, res) {
   var params = req.body;
@@ -69,7 +112,7 @@ function login(req, res) {
 
    Usuario.findOne({ email: email }, (err, usuario)=>{
      if (err) {
-       res.status(500).send({message:'Error en la peticion'});
+       res.status(500).send({message:'Error en la peticion', error: err});
      } else {
        if (!usuario) {
          res.status(404).send({message: 'El usuario no existe o ingreso mal su email'});
@@ -93,5 +136,8 @@ function login(req, res) {
 
 module.exports ={
   createUser,
-  login
+  login,
+  getUsers,
+  getUser,
+  editUser
 };
