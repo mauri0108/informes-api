@@ -39,7 +39,7 @@ function createUser(req, res) {
                   if (!usuarioStored) {
                     res.status(404).send({message: 'No se ha registrado el usuario'});
                   }else {
-                    res.status(200).send({usuario: usuarioStored});
+                    res.status(200).send({usuario: usuarioStored, message: 'Se creo correctamente el usuario'});
                   }
                 }
               });
@@ -48,7 +48,7 @@ function createUser(req, res) {
             }
           });
         } else {
-          res.status(200).send({message: 'Ya existe un usuario registrado con este email', usuario: usuario});
+          res.status(200).send({message: 'Ya existe un usuario registrado con este email'});
         }
       }
     });
