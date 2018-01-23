@@ -124,14 +124,21 @@ function uploadImage( req, res ) {
                     });
                 });
             });
-
-            /*res.status(200).json({
-                message : 'Archivo movido',
-                nombre
-            });*/
         });
-
     }
+}
+
+function getImage(req, res) {
+  var nombre = req.params.name;
+  var path = `./uploads/${nombre}`;
+
+  fs.exists( path, image =>{
+     if ( !image ) {
+       path = './assets/no-img.jpg'
+     }
+
+     res.sendfile(path);
+  });
 }
 
 
@@ -142,6 +149,7 @@ module.exports = {
     updateInformeCompleto,
     getInformeCompleto,
     getInformesUsuario,
-    uploadImage
+    uploadImage,
+    getImage
   };
   

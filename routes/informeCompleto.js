@@ -11,5 +11,6 @@ api.post('/informe-completo/editar', informeCompletoController.updateInformeComp
 api.get('/informe-completo/:id', informeCompletoController.getInformeCompleto);
 api.get('/informes-completos/usuario/:id', informeCompletoController.getInformesUsuario);
 api.post('/upload/:id', informeCompletoController.uploadImage);
+api.get('/img/:name', informeCompletoController.getImage);
 
 module.exports = api;
