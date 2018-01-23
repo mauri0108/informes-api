@@ -2,10 +2,13 @@
 
 var express = require('express');
 var bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
+
 
 var app = express();
 
 //Cargar las rutas
+var informeCompleto_routes = require('./routes/informeCompleto');
 var informe_routes = require('./routes/informe');
 var usuario_routes = require('./routes/usuario');
 
@@ -14,6 +17,7 @@ var usuario_routes = require('./routes/usuario');
 //Body-parser
 app.use(bodyParser.urlencoded({limit: '5mb', extended: true}));
 app.use(bodyParser.json());
+app.use(fileUpload());
 
 //Configuracion del *CORS*
 app.use((req,res,next)=>{
@@ -26,6 +30,7 @@ app.use((req,res,next)=>{
 });
 
 //Rutas base
+app.use('/api/v1', informeCompleto_routes);
 app.use('/api/v1', informe_routes);
 app.use('/api/v1', usuario_routes);
 
