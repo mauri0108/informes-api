@@ -6,10 +6,11 @@ var informeController = require('../controllers/informe');
 var api = express.Router();
 var md_auth = require('../middlewares/authenticated');
 
-api.get('/informes',informeController.getInformes);
-//api.get('/informes',md_auth.ensureAuth,informeController.getInformes);
+api.post('/informe', informeController.createInforme);
+api.put('/informe', informeController.updateInforme);
 api.get('/informe/:id', informeController.getInforme);
-api.post('/informe/crear', informeController.createInforme);
-api.post('/informe/editar', informeController.editInforme);
+api.get('/informes/usuario/:id', informeController.getInformesUsuario);
+api.post('/upload/:id', informeController.uploadImage);
+api.get('/img/:name', informeController.getImage);
 
 module.exports = api;

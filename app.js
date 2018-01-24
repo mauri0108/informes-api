@@ -8,8 +8,8 @@ const fileUpload = require('express-fileupload');
 var app = express();
 
 //Cargar las rutas
-var informeCompleto_routes = require('./routes/informeCompleto');
 var informe_routes = require('./routes/informe');
+var protocolo_routes = require('./routes/protocolo');
 var usuario_routes = require('./routes/usuario');
 
 //Middlewares
@@ -23,15 +23,15 @@ app.use(fileUpload());
 app.use((req,res,next)=>{
   res.header('Access-Control-Allow-Origin','*');
   res.header('Access-Control-Allow-Headers','X-API-KEY, Origin, X-Request-With, Content-Type, Accept, Access-Control-Request-Method');
-  res.header('Acess-Control-Allow-Methods','GET, POST, OPTIONS, PUT, DELETE');
+  res.header('Access-Control-Allow-Methods','GET, POST, OPTIONS, PUT, DELETE');
   res.header('Allow','GET, POST, OPTIONS, PUT, DELETE');
 
   next();
 });
 
 //Rutas base
-app.use('/api/v1', informeCompleto_routes);
 app.use('/api/v1', informe_routes);
+app.use('/api/v1', protocolo_routes);
 app.use('/api/v1', usuario_routes);
 
 module.exports = app;
