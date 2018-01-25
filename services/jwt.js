@@ -12,7 +12,7 @@ exports.CrearToken = (usuario)=>{
     email: usuario.email,
     role: usuario.role,
     iat: moment().unix(),
-    exp: moment().add(30, 'days').unix
+    exp: moment().add(1, 'days').unix
   }
 
   return jwt.encode(payload, secret);

@@ -102,34 +102,32 @@ function editUser(req, res) {
 
 
 function login(req, res) {
+  
   var params = req.body;
-
-   var email = params.email;
-   var pass = params.pass;
+  var email = params.email;
+  var pass = params.pass;
 
     //res.status(200).send({ email : email, pass: pass});
     //return;
 
    Usuario.findOne({ email: email }, (err, usuario)=>{
      if (err) {
-       res.status(500).send({message:'Error en la peticion', error: err});
-     } else {
-       if (!usuario) {
-         res.status(404).send({message: 'El usuario no existe o ingreso mal su email'});
-       }else {
-         bcrypt.compare(pass, usuario.pass, (err,check)=>{
+       return res.status(500).send({message:'Error en la peticion', error: err});
+     } 
+       
+    if (!usuario) {
+         res.status(404).send({message: 'No se ha podido loguear e-mail o password incorrectos'});
+    }else {
+       bcrypt.compare(pass, usuario.pass, (err,check)=>{
            if (check) {
-             //Se devuelven los datos del usuario
-             if (params.gethash) {
-               //devolver el jwt
-               res.status(200).send({token: jwt.CrearToken(usuario), usuario: usuario});
-             }
+            usuario.pass = "No disponible";
+            res.status(200).send({token: jwt.CrearToken(usuario), usuario: usuario});
            }else {
-             res.status(404).send({message: 'No se ha podido loguear, pass incorrecto'});
+             res.status(404).send({message: 'No se ha podido loguear e-mail o password incorrectos'});
            }
          });
-       }
-     }
+    }
+     
    });
 }
 
