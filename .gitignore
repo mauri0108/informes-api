@@ -24,6 +24,11 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 
+#extensions
+*.png
+*.jpg
+*.jpeg
+
 # misc
 /.sass-cache
 /connect.lock
