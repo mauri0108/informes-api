@@ -6,7 +6,7 @@ var InformeSchema = Schema({
   logo: String,
   medico: String,
   paciente: String,
-  detalle : {
+  detalle : { 
         _id: false,
         nombre : String,
         items : [
@@ -28,5 +28,7 @@ var InformeSchema = Schema({
    usuario : { type: Schema.Types.ObjectId, ref: 'Usuario' },
    fecha: String
 });
+
+InformeSchema.index({ 'detalle.nombre':'text', 'paciente' : 'text', 'fecha': 'text' });
 
 module.exports = mongoose.model('Informe', InformeSchema, 'informes');

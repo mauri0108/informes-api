@@ -2,6 +2,7 @@
 
 var Informe = require("../models/informe");
 var fs = require('fs');
+var _path = require("path");
 
 
 function createInforme(req, res) {
@@ -31,7 +32,7 @@ function createInforme(req, res) {
 }
 
 function updateInforme( req, res ) {
-    var id = req.body.id;
+    var id = req.body._id;
     var datosNuevos = req.body;
     
     Informe.findByIdAndUpdate( id, datosNuevos,{new : true}, ( err, informeEdited)=>{
@@ -71,7 +72,7 @@ function getInformesUsuario(req, res) {
         res.status(500).send({ message: 'Error en la peticion al servidor', error : err });
       } else {
         if ( !informes ) {
-          res.status(200).send({ message: 'No existes informes para este usuario'});
+          res.status(404).send({ message: 'No existes informes para este usuario'});
         } else {
           res.status(200).send( { informes : informes } );
         }
@@ -132,14 +133,27 @@ function uploadImage( req, res ) {
 
 function getImage(req, res) {
   var nombre = req.params.name;
-  var path = `./uploads/${nombre}`;
+  var path = _path.join(__dirname, '..', `uploads/${nombre}`);
 
-  fs.exists( path, image =>{
+  fs.exists(path, image =>{
      if ( !image ) {
-       path = './assets/no-img.jpg'
+       //res.status(404).send({ ruta: path });
+       res.status(404).send({ message: 'No se encontro la imagen' });
      }
 
-     res.sendfile(path);
+     res.sendFile(path);
+  });
+}
+
+function searchInforme(req, res) {
+  var texto = req.params.texto;
+  var idUsuario = req.params.id;
+  Informe.find({'$text':{'$search': texto }, usuario: idUsuario }).exec((err, informes) =>{
+    if (err) {
+      return res.status(500).send({ message : 'Error en la busqueda'});
+    }
+
+    res.status(200).json({ informes });
   });
 }
 
@@ -151,6 +165,7 @@ module.exports = {
     getInforme,
     getInformesUsuario,
     uploadImage,
-    getImage
+    getImage,
+    searchInforme
 };
   
