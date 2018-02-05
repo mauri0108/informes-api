@@ -1,19 +1,19 @@
 'use strict'
 
-var jwt = require('jwt-simple');
-var moment = require('moment');
-var secret = '123456789';
+var jwt = require('jsonwebtoken');
+var crypto = require("crypto");
+var SEED = require('../config/config').SEED ;
 
-exports.CrearToken = (usuario)=>{
-  var payload = {
-    sub: usuario._id,
-    nombre: usuario.nombre,
-    apellido: usuario.apellido,
-    email: usuario.email,
-    role: usuario.role,
-    iat: moment().unix(),
-    exp: moment().add(1, 'days').unix
-  }
+exports.CrearToken = (usuario, time)=>{
 
-  return jwt.encode(payload, secret);
+  var id = crypto.randomBytes(20).toString('hex');
+
+  var token = jwt.sign( {
+                         sub: id,
+                         nombre: usuario.nombre,
+                         apellido: usuario.apellido,
+                         email: usuario.email
+                        }, SEED , { expiresIn: time  });
+
+  return token;
 };

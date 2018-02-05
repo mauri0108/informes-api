@@ -4,6 +4,10 @@ var bcrypt = require('bcrypt-nodejs');
 var Usuario = require('../models/usuario');
 var jwt = require('../services/jwt');
 var moment = require('moment');
+var nodemailer = require('nodemailer');
+var EMAIL = require('../config/config').EMAIL ;
+var PASS = require('../config/config').PASS ;
+var URL_CLIENTE = require('../config/config').URL_CLIENTE ;
 
 function createUser(req, res) {
   var params = req.body;
@@ -107,9 +111,6 @@ function login(req, res) {
   var email = params.email;
   var pass = params.pass;
 
-    //res.status(200).send({ email : email, pass: pass});
-    //return;
-
    Usuario.findOne({ email: email }, (err, usuario)=>{
      if (err) {
        return res.status(500).send({message:'Error en la peticion', error: err});
@@ -121,7 +122,7 @@ function login(req, res) {
        bcrypt.compare(pass, usuario.pass, (err,check)=>{
            if (check) {
             usuario.pass = "No disponible";
-            res.status(200).send({token: jwt.CrearToken(usuario), usuario: usuario});
+            res.status(200).send({token: jwt.CrearToken(usuario, 86400), usuario: usuario});
            }else {
              res.status(404).send({message: 'No se ha podido loguear e-mail o password incorrectos'});
            }
@@ -131,11 +132,108 @@ function login(req, res) {
    });
 }
 
+function resetPass(  req, res){
+  var body = req.body;
+  var email = body.email;
+  var token = '';
+
+  Usuario.findOne({ email: email }, (err, usuario)=>{
+    if (err) {
+      return res.status(500).send({message:'Error en la peticion', error: err});
+    } 
+     
+    if (!usuario) {
+        res.status(404).send({message: 'No se encontro el mail seleccionado'});
+    }else {
+      var transoporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user : EMAIL,
+          pass : PASS,
+        }
+      });
+
+      token = jwt.CrearToken(usuario, 3600);
+
+      usuario.save((err, usuarioStored)=>{
+        if (err) {
+          res.status(500).send({message: 'Error al guardar el usuario', error: err});
+        } else {
+          if (!usuarioStored) {
+              res.status(404).send({message: 'No se ha podido cambiado la contraseña'});
+          }else {
+              res.status(200).send({ message: 'Se cambio correctamente la contraseña'});
+          }
+        }
+      });
+
+      var mailOptions = {
+        from: 'dominaeco.system <'+EMAIL+'>',
+        to: usuario.email,
+        subject: 'Cambio de contraseña',
+        text: `Solicitud de cambio de contraseña. Para poder cambiar efectivamente su contraseña debera ingresar el siguiente link 
+              ${URL_CLIENTE}${token}. Tenga en cuenta que este link solo
+              estara disponible por 10 minutos.`,
+        html: `<h2>Solicitud de cambio de contraseña</h2>
+              <p>Para poder cambiar efectivamente su contraseña debera ingresar el siguiente link, 
+              que solo estara disponible por 1 hora o hasta que cambie su contraseña.</p>
+              ${URL_CLIENTE}${token}`
+      };
+
+      transoporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          res.status(401).send({ error })
+        }
+
+        res.status(200).send({ message: 'Se ha enviado a su e-mail registrado las instrucciones para cambiar su contraseña', info: info})
+      });
+            
+
+    }
+  });
+
+}
+
+function changePass( req, res){
+  var body = req.body;
+  var newPass = body.pass;
+  var email = body.email;
+
+  Usuario.findOne({ email: email }, (err, usuario)=>{
+    if (err) {
+      return res.status(500).send({message:'Error en la peticion', error: err});
+    } 
+      
+   if (!usuario) {
+        res.status(404).send({message: 'No se ha cambiar la contraseña loguear e-mail incorrecto'});
+   }else {
+      bcrypt.hash(newPass,null,null,(err,hash)=>{
+        usuario.pass = hash;
+
+        usuario.save((err, usuarioStored)=>{
+          if (err) {
+            res.status(500).send({message: 'Error al guardar el usuario', error: err});
+          } else {
+            if (!usuarioStored) {
+                res.status(404).send({message: 'No se ha podido cambiado la contraseña'});
+            }else {
+                res.status(200).send({ message: 'Se cambio correctamente la contraseña'});
+            }
+          }
+        });
+      
+      });
+    }
+  });
+}
+
 
 module.exports ={
   createUser,
   login,
   getUsers,
   getUser,
-  editUser
+  editUser,
+  resetPass,
+  changePass
 };

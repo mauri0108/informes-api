@@ -11,6 +11,8 @@ api.post('/login',usuarioController.login);
 api.get('/usuarios',usuarioController.getUsers);
 api.get('/usuario/:id',usuarioController.getUser);
 api.put('/usuario', md_auth.ensureAuth ,usuarioController.editUser);
+api.post('/usuario/reset-pass',usuarioController.resetPass);
+api.post('/usuario/change-pass', md_auth.ensureResetPass ,usuarioController.changePass);
 
 
 module.exports = api;
