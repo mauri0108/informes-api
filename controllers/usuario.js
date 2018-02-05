@@ -155,28 +155,15 @@ function resetPass(  req, res){
 
       token = jwt.CrearToken(usuario, 3600);
 
-      usuario.save((err, usuarioStored)=>{
-        if (err) {
-          res.status(500).send({message: 'Error al guardar el usuario', error: err});
-        } else {
-          if (!usuarioStored) {
-              res.status(404).send({message: 'No se ha podido cambiado la contraseña'});
-          }else {
-              res.status(200).send({ message: 'Se cambio correctamente la contraseña'});
-          }
-        }
-      });
-
       var mailOptions = {
         from: 'dominaeco.system <'+EMAIL+'>',
         to: usuario.email,
         subject: 'Cambio de contraseña',
-        text: `Solicitud de cambio de contraseña. Para poder cambiar efectivamente su contraseña debera ingresar el siguiente link 
-              ${URL_CLIENTE}${token}. Tenga en cuenta que este link solo
-              estara disponible por 10 minutos.`,
+        text: `Solicitud de cambio de contraseña. Para poder cambiar efectivamente su contraseña debera ingresar el siguiente link, 
+              que solo estara disponible por 1 hora.${URL_CLIENTE}${token}`,
         html: `<h2>Solicitud de cambio de contraseña</h2>
               <p>Para poder cambiar efectivamente su contraseña debera ingresar el siguiente link, 
-              que solo estara disponible por 1 hora o hasta que cambie su contraseña.</p>
+              que solo estara disponible por 1 hora.</p>
               ${URL_CLIENTE}${token}`
       };
 
@@ -194,7 +181,7 @@ function resetPass(  req, res){
 
 }
 
-function changePass( req, res){
+function changePassToken( req, res){
   var body = req.body;
   var newPass = body.pass;
   var email = body.email;
@@ -227,6 +214,47 @@ function changePass( req, res){
   });
 }
 
+function changePass( req, res) {
+  var body = req.body;
+  var email = body.email;
+  var pass = body.pass;
+  var newPass = body.newpass
+
+   Usuario.findOne({ email: email }, (err, usuario)=>{
+     if (err) {
+       return res.status(500).send({message:'Error en la peticion', error: err});
+     } 
+       
+    if (!usuario) {
+         res.status(404).send({message: 'No se ha podido encontrar el usuario'});
+    }else {
+       bcrypt.compare(pass, usuario.pass, (err,check)=>{
+           if (check) {
+            bcrypt.hash(newPass,null,null,(err,hash)=>{
+              usuario.pass = hash;
+  
+              usuario.save((err, usuarioStored)=>{
+                  if (err) {
+                    res.status(500).send({message: 'Error al actualizar la contraseña el usuario', error: err});
+                  } else {
+                    if (!usuarioStored) {
+                      res.status(404).send({message: 'No se ha podido cambiar la contraseña del usuario el usuario'});
+                    }else {
+                      res.status(200).send({ message: 'Se cambio correctamente la contraseña del usuario'});
+                    }
+                  }
+                });
+             
+            });
+           }else {
+             res.status(404).send({ message: 'La contraseña ingresada no coincide con su contrasña, no es posible cambiar su contraseña' });
+           }
+         });
+    }
+     
+   });
+}
+
 
 module.exports ={
   createUser,
@@ -235,5 +263,6 @@ module.exports ={
   getUser,
   editUser,
   resetPass,
+  changePassToken,
   changePass
 };
