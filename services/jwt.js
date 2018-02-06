@@ -6,7 +6,7 @@ var SEED = require('../config/config').SEED ;
 
 exports.CrearToken = (usuario, time)=>{
 
-  var id = crypto.randomBytes(20).toString('hex');
+  var id = crypto.randomBytes(15).toString('hex');
 
   var token = jwt.sign( {
                          sub: id,

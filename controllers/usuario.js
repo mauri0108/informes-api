@@ -1,10 +1,19 @@
 'use strict'
 
-var bcrypt = require('bcrypt-nodejs');
+//Modelos
 var Usuario = require('../models/usuario');
+var Token = require('../models/token');
+
+//Servicios
 var jwt = require('../services/jwt');
+
+//Librerias
+var bcrypt = require('bcrypt-nodejs');
+var crypto = require("crypto");
 var moment = require('moment');
 var nodemailer = require('nodemailer');
+
+//Configs
 var EMAIL = require('../config/config').EMAIL ;
 var PASS = require('../config/config').PASS ;
 var URL_CLIENTE = require('../config/config').URL_CLIENTE ;
@@ -135,7 +144,7 @@ function login(req, res) {
 function resetPass(  req, res){
   var body = req.body;
   var email = body.email;
-  var token = '';
+  var cryptoToken = '';
 
   Usuario.findOne({ email: email }, (err, usuario)=>{
     if (err) {
@@ -143,7 +152,7 @@ function resetPass(  req, res){
     } 
      
     if (!usuario) {
-        res.status(404).send({message: 'No se encontro el mail seleccionado'});
+        res.status(404).send({message: 'No se encontro el mail seleccionado:'+ email });
     }else {
       var transoporter = nodemailer.createTransport({
         service: 'gmail',
@@ -153,29 +162,43 @@ function resetPass(  req, res){
         }
       });
 
-      token = jwt.CrearToken(usuario, 3600);
+      cryptoToken = crypto.randomBytes(8).toString('hex');
 
-      var mailOptions = {
-        from: 'dominaeco.system <'+EMAIL+'>',
-        to: usuario.email,
-        subject: 'Cambio de contraseña',
-        text: `Solicitud de cambio de contraseña. Para poder cambiar efectivamente su contraseña debera ingresar el siguiente link, 
-              que solo estara disponible por 1 hora.${URL_CLIENTE}${token}`,
-        html: `<h2>Solicitud de cambio de contraseña</h2>
-              <p>Para poder cambiar efectivamente su contraseña debera ingresar el siguiente link, 
-              que solo estara disponible por 1 hora.</p>
-              ${URL_CLIENTE}${token}`
-      };
-
-      transoporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          res.status(401).send({ error })
-        }
-
-        res.status(200).send({ message: 'Se ha enviado a su e-mail registrado las instrucciones para cambiar su contraseña', info: info})
+      var token = new Token({
+        token: cryptoToken,
+        usuario: usuario.email,
+        creado : moment().format('DD-MM-YYYY HH:mm:ss')
       });
-            
 
+      token.save( (error, tokenStored) => {
+        if (error) {
+          res.status(500).send({ message: 'Error en la peticion', error : error });
+        } else {
+          if ( !tokenStored ) {
+            res.status(403).send({ message : 'No pudo generar el token'});
+          } else {
+            var mailOptions = {
+              from: 'dominaeco.system <'+EMAIL+'>',
+              to: usuario.email,
+              subject: 'Cambio de contraseña',
+              text: `Solicitud de cambio de contraseña. 
+                    Para poder cambiar efectivamente su contraseña debera ingresar el siguiente link.
+                    ${URL_CLIENTE}${tokenStored.token}`,
+              html: `<h2>Solicitud de cambio de contraseña</h2>
+                    <p>Para poder cambiar efectivamente su contraseña debera ingresar el siguiente link.</p>
+                    ${URL_CLIENTE}${tokenStored.token}`
+            };
+      
+            transoporter.sendMail(mailOptions, (error, info) => {
+              if (error) {
+                res.status(401).send({ error })
+              }
+      
+              res.status(200).send({ message: 'Se ha enviado a su e-mail registrado las instrucciones para cambiar su contraseña', info: info})
+            });
+          }
+        }
+      });
     }
   });
 
@@ -183,41 +206,60 @@ function resetPass(  req, res){
 
 function changePassToken( req, res){
   var body = req.body;
-  var newPass = body.pass;
-  var email = body.email;
+  var newPass = body.newpass;
+  var token = body.token;
 
-  Usuario.findOne({ email: email }, (err, usuario)=>{
-    if (err) {
+  Token.findOne({ token: token  }, (error, tokenFind) => {
+    if (error) {
       return res.status(500).send({message:'Error en la peticion', error: err});
-    } 
-      
-   if (!usuario) {
-        res.status(404).send({message: 'No se ha cambiar la contraseña loguear e-mail incorrecto'});
-   }else {
-      bcrypt.hash(newPass,null,null,(err,hash)=>{
-        usuario.pass = hash;
+    }
 
-        usuario.save((err, usuarioStored)=>{
-          if (err) {
-            res.status(500).send({message: 'Error al guardar el usuario', error: err});
-          } else {
-            if (!usuarioStored) {
-                res.status(404).send({message: 'No se ha podido cambiado la contraseña'});
-            }else {
-                res.status(200).send({ message: 'Se cambio correctamente la contraseña'});
-            }
-          }
-        });
-      
-      });
+    if (!tokenFind) {
+      res.status(404).send({message: 'No se ha cambiar la contraseña el token es inválido'});
+    } else {
+      Usuario.findOne({ email: tokenFind.usuario }, (err, usuario)=>{
+        if (err) {
+          return res.status(500).send({message:'Error en la peticion', error: err});
+        } 
+          
+        if (!usuario) {
+              res.status(404).send({message: 'No se ha cambiar la contraseña e-mail incorrecto'});
+        }else {
+          bcrypt.hash(newPass,null,null,(err,hash)=>{
+            usuario.pass = hash;
+    
+            usuario.save((err, usuarioStored)=>{
+              if (err) {
+                res.status(500).send({message: 'Error al guardar el usuario', error: err});
+              } else {
+                if (!usuarioStored) {
+                    res.status(404).send({message: 'No se ha podido cambiado la contraseña'});
+                }else {
+                    Token.findByIdAndRemove({ _id : tokenFind._id }, (error) => {
+                      if (error) {
+                        return res.status(500).send({message:'Error en la peticion al borrar token', error: error});
+                      }
+                    });
+    
+                    res.status(200).send({ message: 'Se cambio correctamente la contraseña'});   
+                }
+              }
+            });
+          }); 
+        }
+      });   
     }
   });
+
+
+
+  
 }
 
 function changePass( req, res) {
   var body = req.body;
   var email = body.email;
-  var pass = body.pass;
+  var pass = body.oldpass;
   var newPass = body.newpass
 
    Usuario.findOne({ email: email }, (err, usuario)=>{
