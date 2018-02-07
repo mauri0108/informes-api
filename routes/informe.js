@@ -11,7 +11,6 @@ api.put('/informe',md_auth.ensureAuth ,informeController.updateInforme);
 api.get('/informe/:id', informeController.getInforme);
 api.get('/informes/usuario/:id', informeController.getInformesUsuario);
 api.get('/informes/usuario/:id/buscar/:texto', informeController.searchInforme);
-api.post('/upload/:id', md_auth.ensureAuth ,informeController.uploadImage);
-api.get('/img/:name', informeController.getImage);
+
 
 module.exports = api;

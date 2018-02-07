@@ -12,6 +12,8 @@ var bcrypt = require('bcrypt-nodejs');
 var crypto = require("crypto");
 var moment = require('moment');
 var nodemailer = require('nodemailer');
+var fs = require('fs');
+var _path = require("path");
 
 //Configs
 var EMAIL = require('../config/config').EMAIL ;
@@ -297,6 +299,72 @@ function changePass( req, res) {
    });
 }
 
+function uploadImage( req, res ) {
+  var id = req.params.id;
+  var instIndex = req.query.institucion;
+
+  if( req.files ){
+      let file = req.files.image;
+      let extensionArr = file.name.split('.');
+      let extesion = extensionArr[ extensionArr.length - 1 ];
+
+      let extensionesValidas = [ 'png', 'jpg', 'gif', 'jpeg' ]
+
+      if( extensionesValidas.indexOf(extesion) < 0 ){
+          return res.status(400).send({
+              message : "Extension no valida"
+          });
+      }
+
+      var nombre = `${ id }-${ new Date().getMilliseconds()}.${ extesion }`;
+
+      var path = `./uploads/${ nombre }`;
+      
+      file.mv( path, err =>{
+          if( err ){
+              return res.status(500).json({
+                  message : 'Error al mover archivo',
+                  errors: err
+              });
+          }
+
+          Usuario.findById( id, (err, usuario ) =>{
+
+              let pathViejo = `./uploads/${ usuario.instituciones[instIndex].logo }`;
+
+              if ( fs.existsSync(pathViejo) ) {
+                  fs.unlink( pathViejo );
+              }
+
+              usuario.instituciones[instIndex].logo = nombre;
+
+              usuario.save( (err, usuarioUpdated)=>{
+                  return res.status(200).send({
+                      message: "Institucion agregada correctamente",
+                      usuario : usuarioUpdated
+                  });
+              });
+          });
+
+      });
+
+  }
+}
+
+function getImage(req, res) {
+var nombre = req.params.name;
+var path = _path.join(__dirname, '..', `uploads/${nombre}`);
+
+fs.exists(path, image =>{
+   if ( !image ) {
+     //res.status(404).send({ ruta: path });
+     res.status(404).send({ message: 'No se encontro la imagen' });
+   }
+
+   res.sendFile(path);
+});
+}
+
 
 module.exports ={
   createUser,
@@ -306,5 +374,7 @@ module.exports ={
   editUser,
   resetPass,
   changePassToken,
-  changePass
+  changePass,
+  uploadImage,
+  getImage
 };

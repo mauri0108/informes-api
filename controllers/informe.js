@@ -1,8 +1,7 @@
 'use strict'
 
 var Informe = require("../models/informe");
-var fs = require('fs');
-var _path = require("path");
+
 
 
 function createInforme(req, res) {
@@ -80,70 +79,7 @@ function getInformesUsuario(req, res) {
     });
 }
 
-function uploadImage( req, res ) {
-    var id = req.params.id;
 
-    if( req.files ){
-        let file = req.files.image;
-        let extensionArr = file.name.split('.');
-        let extesion = extensionArr[ extensionArr.length - 1 ];
-
-        let extensionesValidas = [ 'png', 'jpg', 'gif', 'jpeg' ]
-
-        if( extensionesValidas.indexOf(extesion) < 0 ){
-            return res.status(400).send({
-                message : "Extension no valida"
-            });
-        }
-
-        var nombre = `${ id }-${ new Date().getMilliseconds()}.${ extesion }`;
-
-        var path = `./uploads/${ nombre }`;
-        
-        file.mv( path, err =>{
-            if( err ){
-                return res.status(500).json({
-                    message : 'Error al mover archivo',
-                    errors: err
-                });
-            }
-
-            Informe.findById( id, (err, informe ) =>{
-
-                let pathViejo = `./uploads/${ informe.logo }`;
-
-                if ( fs.existsSync(pathViejo) ) {
-                    fs.unlink( pathViejo );
-                }
-
-                informe.logo = nombre;
-
-                informe.save( (err, informeUpdated)=>{
-                    return res.status(200).send({
-                        message: "Imagen actualizada correctamente",
-                        informe : informeUpdated
-                    });
-                });
-            });
-
-        });
-
-    }
-}
-
-function getImage(req, res) {
-  var nombre = req.params.name;
-  var path = _path.join(__dirname, '..', `uploads/${nombre}`);
-
-  fs.exists(path, image =>{
-     if ( !image ) {
-       //res.status(404).send({ ruta: path });
-       res.status(404).send({ message: 'No se encontro la imagen' });
-     }
-
-     res.sendFile(path);
-  });
-}
 
 function searchInforme(req, res) {
   var texto = req.params.texto;
@@ -164,8 +100,6 @@ module.exports = {
     updateInforme,
     getInforme,
     getInformesUsuario,
-    uploadImage,
-    getImage,
     searchInforme
 };
   

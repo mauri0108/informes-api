@@ -14,6 +14,8 @@ api.put('/usuario', md_auth.ensureAuth ,usuarioController.editUser);
 api.post('/usuario/reset-pass',usuarioController.resetPass);
 api.post('/usuario/token-change-pass',usuarioController.changePassToken);
 api.post('/usuario/change-pass', md_auth.ensureAuth ,usuarioController.changePass);
+api.post('/upload/:id', md_auth.ensureAuth , usuarioController.uploadImage);
+api.get('/img/:name', usuarioController.getImage);
 
 
 module.exports = api;
