@@ -291,7 +291,7 @@ function changePass( req, res) {
              
             });
            }else {
-             res.status(404).send({ message: 'La contraseña ingresada no coincide con su contrasña, no es posible cambiar su contraseña' });
+             res.status(404).send({ message: 'La contraseña ingresada no coincide con su contraseña actual, no es posible cambiar su contraseña' });
            }
          });
     }
