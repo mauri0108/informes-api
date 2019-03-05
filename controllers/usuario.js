@@ -132,7 +132,6 @@ function login(req, res) {
     }else {
        bcrypt.compare(pass, usuario.pass, (err,check)=>{
            if (check) {
-            usuario.pass = "No disponible";
             res.status(200).send({token: jwt.CrearToken(usuario, 86400), usuario: usuario});
            }else {
              res.status(404).send({message: 'No se ha podido loguear e-mail o password incorrectos'});

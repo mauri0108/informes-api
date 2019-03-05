@@ -20,4 +20,11 @@ var UsuarioSchema = Schema({
   fechaBaja : String
 });
 
+UsuarioSchema.methods.toJSON = function(){
+  let user = this;
+  let userObject = user.toObject();
+  delete userObject.pass;
+  return userObject;
+}
+
 module.exports = mongoose.model('Usuario', UsuarioSchema, 'usuarios');

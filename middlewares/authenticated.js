@@ -1,7 +1,6 @@
 'use strict'
 
 var jwt = require('jsonwebtoken');
-//var moment = require('moment');
 var SEED = require('../config/config').SEED ;
 
 exports.ensureAuth = (req, res, next)=>{

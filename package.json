@@ -4,7 +4,8 @@
   "description": "Api para crear informes medicos dinamicos en el cliente",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "node index.js",
+    "dev" : "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Mauricio Lucero",
@@ -16,10 +17,10 @@
     "express-fileupload": "^0.3.0",
     "jsonwebtoken": "^8.1.1",
     "moment": "^2.18.1",
-    "mongoose": "^4.13.6",
+    "mongoose": "^5.4.16",
     "nodemailer": "^4.4.2"
   },
   "devDependencies": {
-    "nodemon": "^1.14.11"
+    "nodemon": "^1.18.10"
   }
 }
