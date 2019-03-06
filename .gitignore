@@ -28,6 +28,7 @@
 *.png
 *.jpg
 *.jpeg
+*.gif
 
 # misc
 /.sass-cache
